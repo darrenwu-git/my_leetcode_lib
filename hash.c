@@ -171,6 +171,30 @@ void insertHT(struct hashtable *ht, void *key, void *val) {
     pe->type = ht->type;
 }
 
+struct demo_data {
+    char *data;
+    int cont;
+};
+
+void free_demo_data(struct hashtable *ht) {
+    struct hash_elem *e;
+    struct demo_data *d;
+    for(int i=0; i< ht->sz ;i++) {
+        e = ht->bucket[i];
+        while (e) {
+            if (e->val) {
+                for(int j=0; j<e->val_cnt; j++) {
+                    d = (struct demo_data *)e->val[j];
+                    if( d && d->data ) {
+                        free(d->data);
+                        free(d);
+                    }
+                }
+            }
+            e = e->next;
+        }
+    }
+}
 int main() {
     int str_ht_sz = 5;
     int ul_ht_sz = 5;
@@ -178,6 +202,31 @@ int main() {
 
     struct hashtable *str_ht = initHT(str_ht_sz, H_STRING);
     struct hashtable *ul_ht = initHT(ul_ht_sz, H_UL);
+    
+    struct hashtable *demo_ht = initHT(10, H_STRING);
+
+    struct demo_data **demo_d = malloc(sizeof(struct demo_data *) * 10);
+
+    for ( int i=0; i< 10; i++) {
+        char str[10];
+        char key[10];
+        demo_d[i] = malloc(sizeof(struct demo_data));
+        sprintf(str, "demo%d", i);
+        sprintf(key, "key%d", i);
+        demo_d[i]->data = strdup(str);
+        demo_d[i]->cont = i;
+
+        insertHT(demo_ht, key, demo_d[i]);
+    }
+
+    str_elem = searchHT(demo_ht, (void *)"key5");
+    if ( str_elem ) {
+        for(int i=0; i<str_elem->val_cnt; i++) {
+            struct demo_data *d = (struct demo_data *)str_elem->val[i];
+            printf("demo: %s, cont:%d\n", d->data, d->cont);
+        }
+    }
+
 
     insertHT(str_ht, (void *)"abc", "123");
     insertHT(str_ht, (void *)"abc", "333");
@@ -217,6 +266,17 @@ int main() {
         }
     }
 
+    
+    free_demo_data(demo_ht);
+    /*
+    for ( int i=0; i< 1; i++) {
+        free(demo_d[i]->data);
+        free(demo_d[i]);
+    }*/
+    free(demo_d);
+    
+    destroyHT(demo_ht, 10);
+   
     destroyHT(str_ht, str_ht_sz);
     destroyHT(ul_ht, ul_ht_sz);
     return 0;
