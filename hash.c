@@ -19,6 +19,7 @@ struct hash_elem {
     } val;
     int val_cnt;
     struct hash_elem *next;
+    hash_type_t type;
 };
 
 struct hashtable {
@@ -152,6 +153,7 @@ void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
 
                 pe->val.pstr = realloc(pe->val.pstr, sizeof(char *) * pe->val_cnt);
                 pe->val.pstr[pe->val_cnt - 1] = strdup(val);
+                pe->type = ht->type;
                 return;
             }
             pe = pe->next;
@@ -172,6 +174,7 @@ void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
         pe->val.pstr = realloc(pe->val.pstr, sizeof(char *) * pe->val_cnt);
         pe->val.pstr[pe->val_cnt - 1] = strdup(val);
         pe->next = NULL;
+        pe->type = ht->type;
 
     } else { //H_UL
         struct hash_elem *prev_e;
@@ -182,6 +185,7 @@ void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
 
                 pe->val.ul = realloc(pe->val.ul, sizeof(unsigned long) * pe->val_cnt);
                 pe->val.ul[pe->val_cnt - 1] = *(unsigned long *)val;
+                pe->type = ht->type;
                 return;
             }
             pe = pe->next;
@@ -202,6 +206,7 @@ void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
         pe->val.ul = realloc(pe->val.ul, sizeof(unsigned long) * pe->val_cnt);
         pe->val.ul[pe->val_cnt - 1] = *(unsigned long *) val;
         pe->next = NULL;
+        pe->type = ht->type;
     }
     
 }
