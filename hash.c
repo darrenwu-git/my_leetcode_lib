@@ -87,11 +87,11 @@ unsigned long hash(void *key, hash_type_t type, int htSZ) {
     return hashv;
 }
 
-struct hash_elem * searchHT(struct hashtable *ht, void *key, int htSZ) {
+struct hash_elem * searchHT(struct hashtable *ht, void *key) {
     unsigned long hashv;
     struct hash_elem *e = NULL;
 
-    hashv = hash(key, ht->type, htSZ);
+    hashv = hash(key, ht->type, ht->sz);
 
     if ( ht->type == H_STRING) {
         e = ht->bucket[hashv];
@@ -112,12 +112,12 @@ struct hash_elem * searchHT(struct hashtable *ht, void *key, int htSZ) {
     return e;
 }
 
-void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
+void insertHT(struct hashtable *ht, void *key, void *val) {
     struct hash_elem **ppe;
     struct hash_elem *pe;
     unsigned long hashv;
 
-    hashv = hash(key, ht->type, htSZ);
+    hashv = hash(key, ht->type, ht->sz);
     ppe = &ht->bucket[hashv];
     //allocate first
     if (*ppe == NULL ) {
@@ -179,13 +179,13 @@ int main() {
     struct hashtable *str_ht = initHT(str_ht_sz, H_STRING);
     struct hashtable *ul_ht = initHT(ul_ht_sz, H_UL);
 
-    insertHT(str_ht, (void *)"abc", "123", str_ht_sz);
-    insertHT(str_ht, (void *)"abc", "333", str_ht_sz);
-    insertHT(str_ht, (void *)"hhh", "1672", str_ht_sz);
-    insertHT(str_ht, (void *)"osj", "5334", str_ht_sz);
-    insertHT(str_ht, (void *)"ald", "745", str_ht_sz);
-    insertHT(str_ht, (void *)"darren", "8493", str_ht_sz);
-    str_elem = searchHT(str_ht, (void *)"abc", str_ht_sz);
+    insertHT(str_ht, (void *)"abc", "123");
+    insertHT(str_ht, (void *)"abc", "333");
+    insertHT(str_ht, (void *)"hhh", "1672");
+    insertHT(str_ht, (void *)"osj", "5334");
+    insertHT(str_ht, (void *)"ald", "745");
+    insertHT(str_ht, (void *)"darren", "8493");
+    str_elem = searchHT(str_ht, (void *)"abc");
     if ( str_elem ) {
         for(int i=0; i<str_elem->val_cnt; i++) {
             printf("str: %s\n", (char *)str_elem->val[i]);
@@ -193,24 +193,24 @@ int main() {
     }
     unsigned long k =3;
     unsigned long v = 323;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k =3;
     v = 987;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k =6;
     v = 666;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k =8;
     v = 888;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k = 10;
     v = 10101;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k = 11;
     v = 11111;
-    insertHT(ul_ht, (void *)&k, &v, ul_ht_sz);
+    insertHT(ul_ht, (void *)&k, &v);
     k = 3;
-    ul_elem = searchHT(ul_ht, &k, ul_ht_sz);
+    ul_elem = searchHT(ul_ht, &k);
     if (ul_elem) {
         for(int i=0; i<ul_elem->val_cnt; i++) {
             printf("ul: %lu\n", *(unsigned long *)ul_elem->val[i]);
