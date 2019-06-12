@@ -13,10 +13,7 @@ struct hash_elem {
         char * str;
         unsigned long ul;
     } key;
-    union {
-        char **pstr;
-        unsigned long *ul;
-    } val;
+    void **val;
     int val_cnt;
     struct hash_elem *next;
     hash_type_t type;
@@ -50,15 +47,9 @@ void destroyHT(struct hashtable *ht, int sz) {
             if( ht->type == H_STRING ){
                 if (e->key.str)
                     free(e->key.str);
-                if (e->val.pstr) {
-                    for (int j=0; j<e->val_cnt; j++)
-                        if (e->val.pstr[j])
-                            free(e->val.pstr[j]);
-                    free(e->val.pstr);
-                }
-            } else {// H_UL
-                if (e->val.ul)
-                    free(e->val.ul);
+            }
+            if (e->val) {
+                free(e->val);
             }
 
             next_e = e->next;
@@ -134,81 +125,50 @@ void insertHT(struct hashtable *ht, void *key, void *val, int htSZ) {
         *ppe = ht->bucket[hashv];
         if( ht->type == H_STRING ) {
             (*ppe)->key.str = NULL;
-            (*ppe)->val.pstr = NULL;
+            (*ppe)->val = NULL;
         } else { //H_UL
             (*ppe)->key.ul = 0;
-            (*ppe)->val.ul = NULL;
+            (*ppe)->val = NULL;
         }
         (*ppe)->val_cnt = 0;
         (*ppe)->next = NULL;
     }
 
     pe = *ppe;
-    if ( ht->type == H_STRING ) {
-        struct hash_elem *prev_e;
-        while (pe) {
-            prev_e = pe;
-            if( pe->key.str != NULL && strcmp(pe->key.str, key) == 0) { //same key, extend value
+    struct hash_elem *prev_e;
+    while (pe) {
+        prev_e = pe;
+        if ( ( ht->type == H_STRING && pe->key.str != NULL && strcmp(pe->key.str, key) == 0) || \
+            ( ht->type == H_UL && pe->key.ul == *(unsigned long *)key)) {//same key, extend value
                 pe->val_cnt +=1;
-
-                pe->val.pstr = realloc(pe->val.pstr, sizeof(char *) * pe->val_cnt);
-                pe->val.pstr[pe->val_cnt - 1] = strdup(val);
+                pe->val = realloc(pe->val, sizeof(void *) * pe->val_cnt);
+                pe->val[pe->val_cnt - 1] = val;
                 pe->type = ht->type;
                 return;
-            }
-            pe = pe->next;
         }
-
-        if ( prev_e )
-            pe = prev_e;
-
-        if (pe->val_cnt > 0) { //collision case 
-            pe->next = malloc(sizeof(struct hash_elem));
-            pe = prev_e->next;
-            pe->val.pstr = NULL;
-            pe->val_cnt = 0;
-        }
-
-        pe->key.str = strdup(key);
-        pe->val_cnt += 1;
-        pe->val.pstr = realloc(pe->val.pstr, sizeof(char *) * pe->val_cnt);
-        pe->val.pstr[pe->val_cnt - 1] = strdup(val);
-        pe->next = NULL;
-        pe->type = ht->type;
-
-    } else { //H_UL
-        struct hash_elem *prev_e;
-        while (pe) {
-            prev_e = pe;
-            if( pe->key.ul == *(unsigned long *)key) { //same key, extend value
-                pe->val_cnt +=1;
-
-                pe->val.ul = realloc(pe->val.ul, sizeof(unsigned long) * pe->val_cnt);
-                pe->val.ul[pe->val_cnt - 1] = *(unsigned long *)val;
-                pe->type = ht->type;
-                return;
-            }
-            pe = pe->next;
-        }
-
-        if ( prev_e )
-            pe = prev_e;
-
-        if (pe->val_cnt > 0) { //collision case 
-            pe->next = malloc(sizeof(struct hash_elem));
-            pe = prev_e->next;
-            pe->val.ul = NULL;
-            pe->val_cnt = 0;
-        }
-
-        pe->key.ul = *(unsigned long *)key;
-        pe->val_cnt += 1;
-        pe->val.ul = realloc(pe->val.ul, sizeof(unsigned long) * pe->val_cnt);
-        pe->val.ul[pe->val_cnt - 1] = *(unsigned long *) val;
-        pe->next = NULL;
-        pe->type = ht->type;
+        pe = pe->next;
     }
-    
+
+    if ( prev_e )
+        pe = prev_e;
+
+    if (pe->val_cnt > 0) { //collision case 
+        pe->next = malloc(sizeof(struct hash_elem));
+        pe = prev_e->next;
+        pe->val = NULL;
+        pe->val_cnt = 0;
+    }
+
+    if ( ht->type == H_STRING )
+        pe->key.str = strdup(key);
+    else //H_UL
+        pe->key.ul = *(unsigned long *)key;
+        
+    pe->val_cnt += 1;
+    pe->val = realloc(pe->val, sizeof(void *) * pe->val_cnt);
+    pe->val[pe->val_cnt - 1] = val;
+    pe->next = NULL;
+    pe->type = ht->type;
 }
 
 int main() {
@@ -225,10 +185,10 @@ int main() {
     insertHT(str_ht, (void *)"osj", "5334", str_ht_sz);
     insertHT(str_ht, (void *)"ald", "745", str_ht_sz);
     insertHT(str_ht, (void *)"darren", "8493", str_ht_sz);
-    str_elem = searchHT(str_ht, (void *)"darren", str_ht_sz);
+    str_elem = searchHT(str_ht, (void *)"abc", str_ht_sz);
     if ( str_elem ) {
         for(int i=0; i<str_elem->val_cnt; i++) {
-            printf("%s\n", str_elem->val.pstr[i]);
+            printf("str: %s\n", (char *)str_elem->val[i]);
         }
     }
     unsigned long k =3;
@@ -253,7 +213,7 @@ int main() {
     ul_elem = searchHT(ul_ht, &k, ul_ht_sz);
     if (ul_elem) {
         for(int i=0; i<ul_elem->val_cnt; i++) {
-            printf("%lu\n", ul_elem->val.ul[i]);
+            printf("ul: %lu\n", *(unsigned long *)ul_elem->val[i]);
         }
     }
 
