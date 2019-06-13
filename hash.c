@@ -39,8 +39,8 @@ struct hashtable * initHT(int sz, hash_type_t type) {
     return ht;
 }
 
-void destroyHT(struct hashtable *ht, int sz) {
-    for(int i=0; i<sz ;i++) {
+void destroyHT(struct hashtable *ht) {
+    for(int i=0; i<ht->sz ;i++) {
         struct hash_elem *e, *next_e;
         e = ht->bucket[i];
         while (e) {
@@ -275,9 +275,9 @@ int main() {
     }*/
     free(demo_d);
     
-    destroyHT(demo_ht, 10);
+    destroyHT(demo_ht);
    
-    destroyHT(str_ht, str_ht_sz);
-    destroyHT(ul_ht, ul_ht_sz);
+    destroyHT(str_ht);
+    destroyHT(ul_ht);
     return 0;
 }
