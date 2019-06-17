@@ -26,7 +26,8 @@ void Heapify(int *a, int start, int len) {
     }
 }
 void heapSort(int *a , int len) {
-    for( int i=len/2 ; i>=0 ; i--)
+    if (len <= 1) return;
+    for( int i=(len-1)/2 ; i>=0 ; i--)
         Heapify(a, i, len);
 
     while(len>3) {
@@ -41,7 +42,8 @@ void heapSort(int *a , int len) {
 }
 
 int main() {
-    int b[] = { 2, 5, 6, 32, 3, 9, 87, 8, 7, 1, 0 };
+    int b[] = { 2, 5, 6, 32, 3, 9, 87, 8, 7, 1, 0 , 4, 12};
+    //int b[] = { 2, 1, 68};
     int len = sizeof(b)/sizeof(b[0]);
 
 
