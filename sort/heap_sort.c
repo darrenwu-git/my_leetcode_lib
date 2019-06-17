@@ -11,59 +11,45 @@ void swap( int *a, int *b) {
     }
 }
 
-void MaxHeapify( int *a, int start, int len ) {
+void Heapify(int *a, int start, int len) {
+    if ( start*2+2 > len-1) return;
+
     int maxi;
-
-    if( start*2+1 > len -1 ) return;
-
-    if( a[start *2] > a[start *2 + 1] )
-        maxi = start*2;
+    if(a[start*2+2] > a[start*2+1])
+        maxi=start*2+2;
     else
-        maxi = start*2 + 1;
+        maxi=start*2+1;
 
-    if( a[start] >= a[maxi] ) return;
-
-    if( a[start] < a[maxi] ) {
+    if(a[start] < a[maxi]) {
         swap(&a[start], &a[maxi]);
-        MaxHeapify(a, maxi, len);
+        Heapify(a, maxi, len);
     }
 }
-void buildMaxHeap( int *a, int len ) {
+void heapSort(int *a , int len) {
+    for( int i=len/2 ; i>=0 ; i--)
+        Heapify(a, i, len);
 
-    for( int i=len/2 ;  i>=1 ; i-- ){
-        MaxHeapify(a, i, len);
-    }
-}
-
-int * heapSort(int *a, int len ){
-    len = len + 1;
-    int *heap=malloc( sizeof(int) * (len));
-    for (int i=1; i<len; i++)
-        heap[i] = a[i-1];
-    
-    buildMaxHeap(heap, len);
-
-    while(len > 1) {
-        swap( &heap[1], &heap[len-1] );
-        len--;
-        MaxHeapify(heap, 1, len);
+    while(len>3) {
+        swap(&a[0], &a[--len]);
+        Heapify(a, 0, len);
     }
 
-    return heap;
+    if (len == 3)
+        swap(&a[0], &a[2]);
+    if (a[0] > a[1])
+        swap(&a[0], &a[1]);
 }
 
 int main() {
-    int b[] = { 2,6, 5, 8, 32, 3, 9, 87, 8, 7, 1, 0 };
+    int b[] = { 2, 5, 6, 32, 3, 9, 87, 8, 7, 1, 0 };
     int len = sizeof(b)/sizeof(b[0]);
-    int *a=NULL;
 
 
-    a = heapSort(b, len);
-    for ( int i=1; i<len+1 ; i++ ){
-        printf("%d \n", a[i]);
+    heapSort(b, len);
+    for ( int i=0; i<len ; i++ ){
+        printf("%d \n", b[i]);
     }
     printf("\n");
 
-    free(a);
     return 0;
 }
